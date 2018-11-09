@@ -13,17 +13,37 @@ import javax.swing.JFrame;
  *
  * @author visitante
  */
-public class Principal extends JFrame{
-    public Principal(){
+public class Principal extends JFrame implements Runnable{
+    
+    private Board board;
+    
+    public Principal() {
         super();
         initialize();
     }
-    public void initialize(){
+
+    public void initialize() {
         setTitle("Dama");
         setVisible(true);
         setSize(new Dimension(600, 600));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocation(new Point(0, 0));
-        add(new Board());
+        board = new Board();
+        add(board);
+    }
+
+    public Board getBoard() {
+        return board;
+    }
+
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+    @Override
+    public void run() {
+        while(true){
+            board.updateBoard();
+        }
     }
 }

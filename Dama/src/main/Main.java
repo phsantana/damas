@@ -5,19 +5,18 @@
  */
 package main;
 
-import connection.Client;
-import gui.Principal;
+import threads.MyThreads;
+
+
 
 /**
  *
  * @author visitante
  */
 public class Main {
-    public static Principal principal;
-    public static Client client;
+
     
     public static void main(String [] args){
-        principal = new Principal();
-        client = new Client("localhost", 10000);
+        MyThreads mt = MyThreads.getInstace();
     }
 }

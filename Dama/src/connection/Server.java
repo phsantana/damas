@@ -31,7 +31,9 @@ public class Server {
             try {
                 
                 Socket p1 = serverSocket.accept();
+                System.out.println("player 1 connected");
                 Socket p2 = serverSocket.accept();
+                System.out.println("player 2 connected");
                 
                 Connection connection = new Connection(p1, p2);
                 

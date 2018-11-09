@@ -14,7 +14,7 @@ import java.awt.Insets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import main.Main;
+import threads.MyThreads;
 
 /**
  *
@@ -93,7 +93,7 @@ public class Board extends JPanel {
                 add(square, gdc);
             }
         }
-        
+
         addNeighbor();
     }
 
@@ -117,18 +117,25 @@ public class Board extends JPanel {
         }
     }
 
-    public void updateBoard(int[][] matrix) {
+    public void updateBoard() {
 
-        synchronized(Main.client){
+        MyThreads mt = MyThreads.getInstace();
+
+        synchronized (mt.getClientT()) {
             try {
-                Main.client.wait();
+                mt.getClientT().wait();
             } catch (InterruptedException ex) {
                 Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
             }
+
         }
+
+        ControlDama ct = ControlDama.getInstace();
         
-        
-        
+        board = ct.getBoard();
+        mt.getGui().repaint();
+
+        /*
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix.length; j++) {
                 Square square = board[i][j];
@@ -149,5 +156,15 @@ public class Board extends JPanel {
                 }
             }
         }
+         */
     }
+
+    public Square[][] getBoard() {
+        return board;
+    }
+
+    public void setBoard(Square[][] board) {
+        this.board = board;
+    }
+
 }

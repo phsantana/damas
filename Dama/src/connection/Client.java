@@ -5,6 +5,8 @@
  */
 package connection;
 
+import control.ControlDama;
+import gui.Square;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,8 +15,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import main.Main;
-import moviment.Moviment;
+import threads.MyThreads;
 
 /**
  *
@@ -25,8 +26,7 @@ public class Client implements Runnable {
     private Socket socket;
     private Integer player;
     private boolean turn, end;
-    private Moviment moviment;
-
+  
     public Client(String address, int port) {
         try {
             socket = new Socket(InetAddress.getByName(address), port);
@@ -41,6 +41,9 @@ public class Client implements Runnable {
     @Override
     public void run() {
         try {
+            MyThreads mt = MyThreads.getInstace();
+            ControlDama ct = ControlDama.getInstace();
+            
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
@@ -50,22 +53,23 @@ public class Client implements Runnable {
                 while (!end) {
                     if (turn) {
 
-                        synchronized (Main.principal) {
+                        synchronized (mt.getGuiT()) {
                             try {
-                                Main.principal.wait();
+                                mt.getGuiT().wait();
                             } catch (InterruptedException ex) {
                                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                             }
 
-                            outputStream.writeObject(moviment);
+                            outputStream.writeObject(ct.getBoard());
                         }
                     } else {
-                        moviment = (Moviment) inputStream.readObject();
+                        ct.setBoard((Square[][]) inputStream.readObject());
                         turn = true;
                         notify();
                     }
                     end = (boolean) inputStream.readObject();
                     notify();
+                    
                 }
             }
         } catch (IOException | ClassNotFoundException ex) {
@@ -73,5 +77,38 @@ public class Client implements Runnable {
         }
 
     }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public Integer getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Integer player) {
+        this.player = player;
+    }
+
+    public boolean isTurn() {
+        return turn;
+    }
+
+    public void setTurn(boolean turn) {
+        this.turn = turn;
+    }
+
+    public boolean isEnd() {
+        return end;
+    }
+
+    public void setEnd(boolean end) {
+        this.end = end;
+    }
+
 
 }

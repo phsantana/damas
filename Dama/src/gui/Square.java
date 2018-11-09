@@ -5,6 +5,7 @@
  */
 package gui;
 
+import control.ControlDama;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +15,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JPanel;
+import threads.MyThreads;
 
 /**
  *
@@ -127,17 +129,22 @@ public class Square extends JPanel implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent me) {
-
+        MyThreads mt = MyThreads.getInstace();
+        ControlDama ct = ControlDama.getInstace();
+        
         if (squareClicked != null) {
 
             if (squareClicked.isIsPiece() && !isPiece) {
 
                 if (check()) {
-                    synchronized (this) {
+                    synchronized (mt.getGuiT()) {
                         squareClicked.setIsPiece(false);
                         squareClicked.setClicked(false);
                         isPiece = true;
                         colorPiece = squareClicked.getColorPiece();
+                        
+                        ct.setBoard(mt.getGui().getBoard().getBoard());
+                        
                         notify();
                     }
                 } else {

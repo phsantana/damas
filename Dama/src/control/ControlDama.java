@@ -5,38 +5,63 @@
  */
 package control;
 
-import connection.Client;
+import gui.Square;
+import moviment.Moviment;
 
 /**
  *
  * @author visitante
  */
 public class ControlDama {
+
     private static ControlDama ctrlDama;
-    private Client client;
-    private Integer player;
-    private int [][] matrix;
-    
-    public static ControlDama getInstace(){
-        if(ctrlDama == null)
+    private Moviment moviment;
+    private Square[][] board;
+    private int[][] matrix;
+
+    public static ControlDama getInstace() {
+        if (ctrlDama == null) {
             ctrlDama = new ControlDama();
+        }
         return ctrlDama;
     }
-    public ControlDama(){
+
+    public ControlDama() {
         initialize();
     }
-    
-    public void initialize(){
-        
-        client = new Client("localhost", 10000);
-        
-        matrix = new int[][] {{1,0,1,0,1,0,1,0},{0,1,0,1,0,1,0,1},{1,0,1,0,1,0,1,0},
-            {0,-1,0,-1,0,-1,0,-1},{-1,0,-1,0,-1,0,-1,0},
-            {0,2,0,2,0,2,0,2,0,2},{2,0,2,0,2,0,2,0,2,0},{0,2,0,2,0,2,0,2,0,2}};
+
+    public void initialize() {
+        matrix = new int[][]{{1, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 1, 0, 1, 0, 1}, {1, 0, 1, 0, 1, 0, 1, 0},
+        {0, -1, 0, -1, 0, -1, 0, -1}, {-1, 0, -1, 0, -1, 0, -1, 0},
+        {0, 2, 0, 2, 0, 2, 0, 2, 0, 2}, {2, 0, 2, 0, 2, 0, 2, 0, 2, 0}, {0, 2, 0, 2, 0, 2, 0, 2, 0, 2}};
     }
-    
-    public int [][] getMatrix(){
+
+    public int[][] getMatrix() {
         return matrix;
     }
-    
+
+    public static ControlDama getCtrlDama() {
+        return ctrlDama;
+    }
+
+    public static void setCtrlDama(ControlDama ctrlDama) {
+        ControlDama.ctrlDama = ctrlDama;
+    }
+
+    public Moviment getMoviment() {
+        return moviment;
+    }
+
+    public void setMoviment(Moviment moviment) {
+        this.moviment = moviment;
+    }
+
+    public Square[][] getBoard() {
+        return board;
+    }
+
+    public void setBoard(Square[][] board) {
+        this.board = board;
+    }
+
 }
