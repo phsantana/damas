@@ -36,7 +36,9 @@ public class Connection implements Runnable {
             ObjectInputStream objectInputStream2;
             ObjectOutputStream objectOutputStream1;
             ObjectOutputStream objectOutputStream2;
-
+            
+            objectInputStream1 = new ObjectInputStream(socket1.getInputStream());
+            /*
             Random random = new Random(System.currentTimeMillis());
 
             Integer player1 = random.nextInt(2) + 1;
@@ -101,7 +103,7 @@ public class Connection implements Runnable {
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+            */
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }

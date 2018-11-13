@@ -5,7 +5,10 @@
  */
 package main;
 
-import threads.MyThreads;
+import connection.Client;
+import gui.Principal;
+
+
 
 
 
@@ -17,6 +20,9 @@ public class Main {
 
     
     public static void main(String [] args){
-        MyThreads mt = MyThreads.getInstace();
+        Principal p = new Principal();
+        p.setVisible(true);
+        Client c = new Client("localhost", 5000);
+        new Thread(c).start();
     }
 }

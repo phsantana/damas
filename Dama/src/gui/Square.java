@@ -14,8 +14,10 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
-import threads.MyThreads;
+import synchronize.Synchronize;
 
 /**
  *
@@ -129,49 +131,37 @@ public class Square extends JPanel implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent me) {
-        MyThreads mt = MyThreads.getInstace();
-        ControlDama ct = ControlDama.getInstace();
-        
-        if (squareClicked != null) {
-
-            if (squareClicked.isIsPiece() && !isPiece) {
-
-                if (check()) {
-                    synchronized (mt.getGuiT()) {
-                        squareClicked.setIsPiece(false);
-                        squareClicked.setClicked(false);
-                        isPiece = true;
-                        colorPiece = squareClicked.getColorPiece();
-                        
-                        ct.setBoard(mt.getGui().getBoard().getBoard());
-                        
-                        notify();
-                    }
-                } else {
-                    Square aux = checkNeighbor();
-                    if (aux != null) {
-                        if (aux.getColorPiece() != squareClicked.getColorPiece()) {
-                            aux.setIsPiece(false);
-                            squareClicked.setIsPiece(false);
-                            squareClicked.setClicked(false);
-                            isPiece = true;
-                            colorPiece = squareClicked.getColorPiece();
-                            aux.repaint();
-                        }
-                    }
-                }
-            }
-
-            squareClicked.setClicked(false);
-            squareClicked.repaint();
-            squareClicked = null;
-
-        } else {
-            clicked = true;
-            squareClicked = this;
+        try {
+            
+            Synchronize instance = Synchronize.getInstance();
+            
+            setClicked(true);
+            instance.getMouseEvent().put(this);
+            repaint();
+            
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Square.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
-        repaint();
+    @Override
+    public void mousePressed(MouseEvent me) {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent me) {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent me) {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseExited(MouseEvent me) {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public Square checkNeighbor() {
@@ -206,26 +196,6 @@ public class Square extends JPanel implements MouseListener {
 
     public void setClicked(boolean clicked) {
         this.clicked = clicked;
-    }
-
-    @Override
-    public void mousePressed(MouseEvent me) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent me) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent me) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void mouseExited(MouseEvent me) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public Square[] getNeighbor() {

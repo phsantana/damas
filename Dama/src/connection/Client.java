@@ -15,7 +15,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import threads.MyThreads;
 
 /**
  *
@@ -26,7 +25,7 @@ public class Client implements Runnable {
     private Socket socket;
     private Integer player;
     private boolean turn, end;
-  
+
     public Client(String address, int port) {
         try {
             socket = new Socket(InetAddress.getByName(address), port);
@@ -40,40 +39,34 @@ public class Client implements Runnable {
 
     @Override
     public void run() {
+
+        ControlDama ct = ControlDama.getInstace();
         try {
-            MyThreads mt = MyThreads.getInstace();
-            ControlDama ct = ControlDama.getInstace();
-            
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
-            player = (Integer) inputStream.readObject();
+            try {
+                player = (Integer) inputStream.readObject();
+            } catch (ClassNotFoundException e) {
+            }
+            while (!end) {
+                if (turn) {
 
-            synchronized (this) {
-                while (!end) {
-                    if (turn) {
-
-                        synchronized (mt.getGuiT()) {
-                            try {
-                                mt.getGuiT().wait();
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-
-                            outputStream.writeObject(ct.getBoard());
-                        }
-                    } else {
+                    outputStream.writeObject(ct.getBoard());
+                } else {
+                    try {
                         ct.setBoard((Square[][]) inputStream.readObject());
-                        turn = true;
-                        notify();
+                    } catch (ClassNotFoundException e) {
                     }
+                    turn = true;
+
+                }
+                try {
                     end = (boolean) inputStream.readObject();
-                    notify();
-                    
+                } catch (ClassNotFoundException e) {
                 }
             }
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
         }
 
     }
@@ -109,6 +102,5 @@ public class Client implements Runnable {
     public void setEnd(boolean end) {
         this.end = end;
     }
-
 
 }

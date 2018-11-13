@@ -6,7 +6,7 @@
 package control;
 
 import gui.Square;
-import moviment.Moviment;
+
 
 /**
  *
@@ -15,7 +15,7 @@ import moviment.Moviment;
 public class ControlDama {
 
     private static ControlDama ctrlDama;
-    private Moviment moviment;
+
     private Square[][] board;
     private int[][] matrix;
 
@@ -28,6 +28,7 @@ public class ControlDama {
 
     public ControlDama() {
         initialize();
+        
     }
 
     public void initialize() {
@@ -48,13 +49,6 @@ public class ControlDama {
         ControlDama.ctrlDama = ctrlDama;
     }
 
-    public Moviment getMoviment() {
-        return moviment;
-    }
-
-    public void setMoviment(Moviment moviment) {
-        this.moviment = moviment;
-    }
 
     public Square[][] getBoard() {
         return board;

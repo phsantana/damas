@@ -29,6 +29,7 @@ public class Principal extends JFrame implements Runnable{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocation(new Point(0, 0));
         board = new Board();
+        new Thread(board).start();
         add(board);
     }
 
