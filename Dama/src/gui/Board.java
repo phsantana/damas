@@ -11,8 +11,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 import synchronize.Synchronize;
 
@@ -23,7 +21,6 @@ import synchronize.Synchronize;
 public class Board extends JPanel implements Runnable {
     
     private Square[][] board;
-    private boolean clicked;
     
     public Board() {
         super();
@@ -35,13 +32,18 @@ public class Board extends JPanel implements Runnable {
         setBackground(Color.WHITE);
         setPreferredSize(new Dimension(600, 600));
         setVisible(true);
-        clicked = false;
         
-        int[][] matrix = ControlDama.getInstace().getMatrix();
+        
+        ControlDama ctrld = ControlDama.getInstace();
+        
+        int[][] matrix = ctrld.getMatrix();
         
         board = new Square[matrix.length][matrix.length];
         
         createBoard(matrix);
+        
+        ctrld.setBoard(board);
+
     }
     
     public void createBoard(int[][] matrix) {
@@ -88,6 +90,7 @@ public class Board extends JPanel implements Runnable {
                 gdc.gridx = j;
                 gdc.gridy = (matrix.length - 1) - i;
                 
+                               
                 board[i][j] = square;
                 
                 add(square, gdc);
@@ -117,9 +120,12 @@ public class Board extends JPanel implements Runnable {
         }
     }
     
-    public void updateBoard() {
+    public void updateBoardMouse() {
         Square org = null, dst = null;
+       
         Synchronize instance = Synchronize.getInstance();
+        ControlDama ctrld = ControlDama.getInstace();
+        
         while (true) {
             try {
                 org = (Square) instance.getMouseEvent().take();
@@ -132,6 +138,10 @@ public class Board extends JPanel implements Runnable {
                         current.setColorPiece(org.getColorPiece());
                         current.setIsPiece(true);
                         org.setIsPiece(false);
+                        
+                        ctrld.updateMatrix();
+                        instance.getClientInterfaceGui().put(ctrld.getMatrix());
+                        
                     } else {
                         current = checkNeighborInCommon(org, dst);
                         
@@ -142,13 +152,22 @@ public class Board extends JPanel implements Runnable {
                                 org.setIsPiece(false);
                                 dst.setIsPiece(true);
                                 dst.setColorPiece(org.getColorPiece());
+                                
+                                ctrld.updateMatrix();
+                                instance.getClientInterfaceGui().put(ctrld.getMatrix());
                             }
                         }
                     }
+
                 }
+                
                 org.setClicked(false);
                 dst.setClicked(false);
+                
+
+                
                 repaint();
+                
             } catch (InterruptedException e) {
             }
             
@@ -187,7 +206,7 @@ public class Board extends JPanel implements Runnable {
     
     @Override
     public void run() {
-        updateBoard();
+        updateBoardMouse();
     }
     
 }

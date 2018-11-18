@@ -132,13 +132,17 @@ public class Square extends JPanel implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent me) {
         try {
-            
-            Synchronize instance = Synchronize.getInstance();
-            
-            setClicked(true);
-            instance.getMouseEvent().put(this);
+
+            ControlDama ctrd = ControlDama.getInstace();
+
+            if (ctrd.isTurn()) {
+                Synchronize instance = Synchronize.getInstance();
+
+                setClicked(true);
+                instance.getMouseEvent().put(this);
+            }
             repaint();
-            
+
         } catch (InterruptedException ex) {
             Logger.getLogger(Square.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -162,32 +166,6 @@ public class Square extends JPanel implements MouseListener {
     @Override
     public void mouseExited(MouseEvent me) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public Square checkNeighbor() {
-        for (Square neighbor1 : neighbor) {
-            if (neighbor1 == null) {
-                continue;
-            }
-            for (int j = 0; j < neighbor.length; j++) {
-                if (squareClicked.getNeighbor()[j] == null) {
-                    continue;
-                } else if (neighbor1 == squareClicked.getNeighbor()[j]) {
-                    return neighbor1;
-                }
-            }
-        }
-        return null;
-    }
-
-    public boolean check() {
-        for (int i = 2; i < neighbor.length; i++) {
-            if (squareClicked.getNeighbor()[i] == this) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public boolean isClicked() {

@@ -15,6 +15,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import synchronize.Synchronize;
 
 /**
  *
@@ -40,32 +41,55 @@ public class Client implements Runnable {
     @Override
     public void run() {
 
-        ControlDama ct = ControlDama.getInstace();
+        Synchronize instance = Synchronize.getInstance();
+        ControlDama ctrld = ControlDama.getInstace();
+
         try {
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
             try {
                 player = (Integer) inputStream.readObject();
-            } catch (ClassNotFoundException e) {
-            }
-            while (!end) {
-                if (turn) {
+                System.out.println(player);
 
-                    outputStream.writeObject(ct.getBoard());
-                } else {
-                    try {
-                        ct.setBoard((Square[][]) inputStream.readObject());
-                    } catch (ClassNotFoundException e) {
-                    }
+                if (player == 1) {
                     turn = true;
-
+                } else {
+                    turn = false;
                 }
                 try {
-                    end = (boolean) inputStream.readObject();
-                } catch (ClassNotFoundException e) {
+                    instance.getClientInterfaceGui().put(player);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }
+
+            } catch (ClassNotFoundException e) {
             }
+
+            while (!end) {
+
+                if (turn) {
+                    try {
+
+                        outputStream.writeObject(instance.getClientInterfaceGui().take());
+                        turn = false;
+
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else {
+                    try {
+                        ctrld.setMatrix((int[][]) inputStream.readObject());
+                        ctrld.updateBoard();
+                        
+                        turn = true;
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+            }
+
         } catch (IOException e) {
         }
 

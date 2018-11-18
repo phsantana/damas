@@ -13,7 +13,7 @@ import javax.swing.JFrame;
  *
  * @author visitante
  */
-public class Principal extends JFrame implements Runnable{
+public class Principal extends JFrame{
     
     private Board board;
     
@@ -41,10 +41,6 @@ public class Principal extends JFrame implements Runnable{
         this.board = board;
     }
 
-    @Override
-    public void run() {
-        while(true){
-            board.updateBoard();
-        }
-    }
+    
+    
 }

@@ -20,7 +20,7 @@ public class Server {
    
     public Server(){
         try {
-            serverSocket = new ServerSocket(10000);
+            serverSocket = new ServerSocket(5000);
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }

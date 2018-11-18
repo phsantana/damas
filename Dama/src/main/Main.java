@@ -8,21 +8,37 @@ package main;
 import connection.Client;
 import gui.Principal;
 
-
-
-
-
 /**
  *
  * @author visitante
  */
 public class Main {
 
-    
-    public static void main(String [] args){
-        Principal p = new Principal();
-        p.setVisible(true);
-        Client c = new Client("localhost", 5000);
+    private static Client c;
+
+    private static Principal p;
+
+    public static void main(String[] args) {
+        c = new Client("localhost", 5000);
         new Thread(c).start();
+        p = new Principal();
+        p.setVisible(true);
     }
+
+    public static Client getC() {
+        return c;
+    }
+
+    public static void setC(Client c) {
+        Main.c = c;
+    }
+
+    public static Principal getP() {
+        return p;
+    }
+
+    public static void setP(Principal p) {
+        Main.p = p;
+    }
+    
 }

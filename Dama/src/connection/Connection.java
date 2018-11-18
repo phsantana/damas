@@ -5,8 +5,6 @@
  */
 package connection;
 
-import gui.Square;
-import java.awt.Color;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -30,97 +28,94 @@ public class Connection implements Runnable {
 
     @Override
     public void run() {
+
+        ObjectInputStream input = null;
+        ObjectOutputStream out = null;
+        int turn = 0;
+
+        Random random = new Random(System.currentTimeMillis());
+
+        Integer player1 = random.nextInt(2) + 1;
+
+        Integer player2;
+
+        if (player1 == 1) {
+            player2 = 2;
+            turn = 1;
+
+        } else {
+            player2 = 1;
+            turn = 2;
+
+        }
+
         try {
+            out = new ObjectOutputStream(socket1.getOutputStream());
+            out.writeObject(player1);
+            out.close();
+            out = new ObjectOutputStream(socket2.getOutputStream());
+            out.writeObject(player2);
+            out.close();
 
-            ObjectInputStream objectInputStream1;
-            ObjectInputStream objectInputStream2;
-            ObjectOutputStream objectOutputStream1;
-            ObjectOutputStream objectOutputStream2;
-            
-            objectInputStream1 = new ObjectInputStream(socket1.getInputStream());
-            /*
-            Random random = new Random(System.currentTimeMillis());
-
-            Integer player1 = random.nextInt(2) + 1;
-
-            Integer player2;
-
-            if (player1 == 1) {
-                player2 = 2;
-                objectInputStream1 = new ObjectInputStream(socket2.getInputStream());
-                objectInputStream2 = new ObjectInputStream(socket1.getInputStream());
-
-                objectOutputStream1 = new ObjectOutputStream(socket2.getOutputStream());
-                objectOutputStream2 = new ObjectOutputStream(socket1.getOutputStream());
-            } else {
-                player2 = 1;
-                objectInputStream1 = new ObjectInputStream(socket1.getInputStream());
-                objectInputStream2 = new ObjectInputStream(socket2.getInputStream());
-
-                objectOutputStream1 = new ObjectOutputStream(socket1.getOutputStream());
-                objectOutputStream2 = new ObjectOutputStream(socket2.getOutputStream());
-
-            }
-
-            objectOutputStream1.writeObject(player1);
-            objectOutputStream2.writeObject(player2);
-
-            try {
-                Square[][] board;
-                do {
-                    board = (Square[][]) objectInputStream1.readObject();
-
-                    if (checkEndGame(board) != -1) {
-                        objectOutputStream1.writeObject(false);
-                    } else {
-                        objectOutputStream1.writeObject(true);
-                    }
-
-                    objectOutputStream2.writeObject(board);
-
-                    if (checkEndGame(board) != -1) {
-                        objectOutputStream2.writeObject(false);
-                    } else {
-                        objectOutputStream2.writeObject(true);
-                    }
-
-                    board = (Square[][]) objectInputStream2.readObject();
-
-                    if (checkEndGame(board) != -1) {
-                        objectOutputStream2.writeObject(false);
-                    } else {
-                        objectOutputStream2.writeObject(true);
-                    }
-
-                    objectOutputStream1.writeObject(board);
-
-                    if (checkEndGame(board) != -1) {
-                        objectOutputStream1.writeObject(false);
-                    } else {
-                        objectOutputStream1.writeObject(true);
-                    }
-                } while (checkEndGame(board) == -1);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            */
         } catch (IOException ex) {
+            Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        try {
+            int[][] board = null;
+            do {
+                try {
+
+                    if (turn == 1) {
+                        input = new ObjectInputStream(socket1.getInputStream());
+                        out = new ObjectOutputStream(socket2.getOutputStream());
+                        turn= 2;
+                    } else {
+                        input = new ObjectInputStream(socket2.getInputStream());
+                        out = new ObjectOutputStream(socket1.getOutputStream());
+                        turn = 1;
+                    }
+
+                    board = (int[][]) input.readObject();
+                    input.close();
+                    board = rotacionarMatrizHorario(board);
+                    board = rotacionarMatrizHorario(board);
+
+                    out.writeObject(board);
+                    out.close();
+                } catch (IOException e) {
+                }
+
+            } while (checkEndGame(board) == -1);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
-    public int checkEndGame(Square[][] board) {
+    public int[][] rotacionarMatrizHorario(int[][] matriz) {
+        int largura = matriz.length;
+        int altura = matriz[0].length;
+        int[][] ret = new int[altura][largura];
+        for (int i = 0; i < altura; i++) {
+            for (int j = 0; j < largura; j++) {
+                ret[i][j] = matriz[largura - j - 1][i];
+            }
+        }
+        return ret;
+    }
+
+    public int checkEndGame(int[][] board) {
         int contWhite = 0, contBlack = 0;
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
-                if (board[i][j].isIsPiece()) {
-                    if (board[i][j].getColorPiece() == Color.WHITE) {
-                        contWhite++;
-                    } else {
-                        contBlack++;
-                    }
+
+                if (board[i][j] == 1) {
+                    contWhite++;
+                } else if (board[i][j] == 2) {
+                    contBlack++;
                 }
+
             }
         }
         if (contBlack == 0) {
