@@ -89,6 +89,7 @@ public class ControlDama {
                             break;
                     }
                 }
+                s.repaint();
             }
         }
     }
@@ -138,6 +139,8 @@ public class ControlDama {
             }
         }
         return ret;
+        
+       
     }
 
     public int[][] getMatrix() {

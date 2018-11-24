@@ -6,10 +6,9 @@
 package connection;
 
 import control.ControlDama;
-import gui.Square;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -40,57 +39,76 @@ public class Client implements Runnable {
 
     @Override
     public void run() {
-
+        DataInputStream input = null;
+        DataOutputStream out = null;
         Synchronize instance = Synchronize.getInstance();
-        ControlDama ctrld = ControlDama.getInstace();
+        try {
+            input = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+        }
 
         try {
-            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+            player = input.read();
+        } catch (IOException e) {
 
-            try {
-                player = (Integer) inputStream.readObject();
-                System.out.println(player);
+            
+        }
+        System.out.println(player);
 
-                if (player == 1) {
-                    turn = true;
-                } else {
-                    turn = false;
-                }
+        turn = player == 1;
+
+        try {
+            instance.getClientInterfaceGui().put(player);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        ControlDama ctrld = ControlDama.getInstace();
+        
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        while (!end) {
+            int[][] board;
+            if (turn) {
                 try {
-                    instance.getClientInterfaceGui().put(player);
-                } catch (InterruptedException ex) {
+
+                    board = (int[][]) instance.getClientInterfaceGui().take();
+
+                    for (int i = 0; i < 8; i++) {
+                        for (int j = 0; j < 8; j++) {
+                            out.write(board[i][j]);
+                        }
+                    }
+
+                    turn = false;
+
+                } catch (InterruptedException | IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            } else {
+                board = new int[8][8];
 
-            } catch (ClassNotFoundException e) {
-            }
-
-            while (!end) {
-
-                if (turn) {
-                    try {
-
-                        outputStream.writeObject(instance.getClientInterfaceGui().take());
-                        turn = false;
-
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    for (int i = 0; i < 8; i++) {
+                        for (int j = 0; j < 8; j++) {
+                            board[i][j] = input.read();
+                        }
                     }
-                } else {
-                    try {
-                        ctrld.setMatrix((int[][]) inputStream.readObject());
-                        ctrld.updateBoard();
-                        
-                        turn = true;
-                    } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+
+                    ctrld.setMatrix(board);
+                    ctrld.updateBoard();
+
+                    turn = true;
+                } catch (IOException ex) {
+                    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
             }
 
-        } catch (IOException e) {
         }
 
     }

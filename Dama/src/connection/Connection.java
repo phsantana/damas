@@ -5,6 +5,8 @@
  */
 package connection;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -29,8 +31,8 @@ public class Connection implements Runnable {
     @Override
     public void run() {
 
-        ObjectInputStream input = null;
-        ObjectOutputStream out = null;
+        DataInputStream input = null;
+        DataOutputStream out = null;
         int turn = 0;
 
         Random random = new Random(System.currentTimeMillis());
@@ -50,46 +52,50 @@ public class Connection implements Runnable {
         }
 
         try {
-            out = new ObjectOutputStream(socket1.getOutputStream());
-            out.writeObject(player1);
-            out.close();
-            out = new ObjectOutputStream(socket2.getOutputStream());
-            out.writeObject(player2);
-            out.close();
+            out = new DataOutputStream(socket1.getOutputStream());
+            out.write(player1);
+
+            out = new DataOutputStream(socket2.getOutputStream());
+            out.write(player2);
+
 
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        try {
-            int[][] board = null;
-            do {
-                try {
+        int[][] board = new int[8][8];
+        do {
+            try {
 
-                    if (turn == 1) {
-                        input = new ObjectInputStream(socket1.getInputStream());
-                        out = new ObjectOutputStream(socket2.getOutputStream());
-                        turn= 2;
-                    } else {
-                        input = new ObjectInputStream(socket2.getInputStream());
-                        out = new ObjectOutputStream(socket1.getOutputStream());
-                        turn = 1;
-                    }
-
-                    board = (int[][]) input.readObject();
-                    input.close();
-                    board = rotacionarMatrizHorario(board);
-                    board = rotacionarMatrizHorario(board);
-
-                    out.writeObject(board);
-                    out.close();
-                } catch (IOException e) {
+                if (turn == 1) {
+                    input = new DataInputStream(socket1.getInputStream());
+                    out = new DataOutputStream(socket2.getOutputStream());
+                    turn = 2;
+                } else {
+                    input = new DataInputStream(socket2.getInputStream());
+                    out = new DataOutputStream(socket1.getOutputStream());
+                    turn = 1;
                 }
 
-            } while (checkEndGame(board) == -1);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        board[i][j] = input.read();
+                    }
+                }
+
+                board = rotacionarMatrizHorario(board);
+                board = rotacionarMatrizHorario(board);
+
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        out.writeInt(board[i][j]);
+                    }
+                }
+                out.close();
+            } catch (IOException e) {
+            }
+
+        } while (checkEndGame(board) == -1);
 
     }
 
