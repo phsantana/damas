@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author jean
+ * @author Jean Yamada
  */
 public class Server {
     private ServerSocket serverSocket;

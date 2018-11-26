@@ -7,9 +7,7 @@ package control;
 
 import gui.Square;
 import java.awt.Color;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import synchronize.Synchronize;
+
 
 /**
  *
@@ -23,6 +21,7 @@ public class ControlDama {
     private int[][] matrix;
     private Square[][] board;
 
+    
     public static ControlDama getInstace() {
         if (ctrlDama == null) {
             ctrlDama = new ControlDama();
@@ -36,25 +35,7 @@ public class ControlDama {
     }
 
     public void initialize() {
-        Synchronize instance = Synchronize.getInstance();
-
-        try {
-            player = (Integer) instance.getClientInterfaceGui().take();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ControlDama.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        matrix = new int[][]{{1, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 1, 0, 1, 0, 1}, {1, 0, 1, 0, 1, 0, 1, 0},
-        {0, -1, 0, -1, 0, -1, 0, -1}, {-1, 0, -1, 0, -1, 0, -1, 0},
-        {0, 2, 0, 2, 0, 2, 0, 2, 0, 2}, {2, 0, 2, 0, 2, 0, 2, 0, 2, 0}, {0, 2, 0, 2, 0, 2, 0, 2, 0, 2}};
-        turn = true;
-
-        if (player == 2) {
-            matrix = rotacionarMatrizHorario(matrix);
-            matrix = rotacionarMatrizHorario(matrix);
-            turn = false;
-        }
-
+        
     }
 
     public void updateBoard() {
@@ -84,8 +65,9 @@ public class ControlDama {
                             s.setIsDama(true);
                             s.setColorPiece(Color.BLACK);
                             break;
-                        default:
+                        case -1:
                             s.setIsPiece(false);
+                            s.setIsDama(false);
                             break;
                     }
                 }
@@ -118,7 +100,7 @@ public class ControlDama {
                 } else {
                     Color black = new Color(153, 76, 0);
 
-                    if (square.getColorSquare() == black) {
+                    if (square.getColorSquare().equals(black)) {
                         matrix[i][j] = -1;
                     } else {
                         matrix[i][j] = 0;

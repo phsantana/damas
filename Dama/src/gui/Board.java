@@ -11,12 +11,14 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import synchronize.Synchronize;
 
 /**
  *
- * @author visitante
+ * @author Jean Yamada
  */
 public class Board extends JPanel implements Runnable {
     
@@ -32,18 +34,24 @@ public class Board extends JPanel implements Runnable {
         setBackground(Color.WHITE);
         setPreferredSize(new Dimension(600, 600));
         setVisible(true);
+        Synchronize instance = Synchronize.getInstance();
         
+        int[][] matrix = null;
         
-        ControlDama ctrld = ControlDama.getInstace();
-        
-        int[][] matrix = ctrld.getMatrix();
+        try {
+            matrix = (int[][]) instance.getClientInterfaceGui().take();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         board = new Square[matrix.length][matrix.length];
         
         createBoard(matrix);
         
+        ControlDama ctrld = ControlDama.getInstace();
+        ctrld.setMatrix(matrix);
         ctrld.setBoard(board);
-
+        
     }
     
     public void createBoard(int[][] matrix) {
@@ -90,7 +98,6 @@ public class Board extends JPanel implements Runnable {
                 gdc.gridx = j;
                 gdc.gridy = (matrix.length - 1) - i;
                 
-                               
                 board[i][j] = square;
                 
                 add(square, gdc);
@@ -122,7 +129,7 @@ public class Board extends JPanel implements Runnable {
     
     public void updateBoardMouse() {
         Square org = null, dst = null;
-       
+        
         Synchronize instance = Synchronize.getInstance();
         ControlDama ctrld = ControlDama.getInstace();
         
@@ -131,40 +138,74 @@ public class Board extends JPanel implements Runnable {
                 org = (Square) instance.getMouseEvent().take();
                 dst = (Square) instance.getMouseEvent().take();
                 
-                if (org.isIsPiece() && !dst.isIsPiece()) {
-                    Square current = checkNeighbor(org, dst);
-                    
-                    if (current != null) {
-                        current.setColorPiece(org.getColorPiece());
-                        current.setIsPiece(true);
-                        org.setIsPiece(false);
+                if (org.isIsPiece() && checkePlayer(org)) {
+                    if (!org.isIsDama() && !dst.isIsPiece()) {
                         
-                        ctrld.updateMatrix();
-                        instance.getClientInterfaceGui().put(ctrld.getMatrix());
-                        
-                    } else {
-                        current = checkNeighborInCommon(org, dst);
+                        Square current = checkNeighbor(org, dst);
                         
                         if (current != null) {
+                            current.setColorPiece(org.getColorPiece());
+                            current.setIsPiece(true);
+                            org.setIsPiece(false);
                             
-                            if (current.isIsPiece()) {
-                                current.setIsPiece(false);
+                            if (checkDama(current)) {
+                                current.setIsDama(true);
+                            }
+                            
+                            ctrld.updateMatrix();
+                            instance.getClientInterfaceGui().put(ctrld.getMatrix());
+                            
+                        } else {
+                            current = checkNeighborInCommon(org, dst);
+                            
+                            if (current != null) {
+                                
+                                if (current.isIsPiece()) {
+                                    current.setIsPiece(false);
+                                    current.setIsDama(false);
+                                    org.setIsPiece(false);
+                                    dst.setIsPiece(true);
+                                    dst.setColorPiece(org.getColorPiece());
+                                    
+                                    if (checkDama(current)) {
+                                        current.setIsDama(true);
+                                    }
+                                    ctrld.updateMatrix();
+                                    instance.getClientInterfaceGui().put(ctrld.getMatrix());
+                                }
+                            }
+                        }
+                        
+                    } else if (org.isIsDama() && !dst.isIsPiece()) {
+                        Square crt = checkNeighborDama(org, dst);
+                        
+                        if (crt != null) {
+                            if (crt.isIsPiece()) {
+                                dst.setIsPiece(true);
+                                dst.setIsDama(true);
+                                dst.setColorPiece(org.getColorPiece());
+                                crt.setIsPiece(false);
+                                crt.setIsDama(false);
+                                org.setIsDama(false);
                                 org.setIsPiece(false);
+                                
+                                ctrld.updateMatrix();
+                                instance.getClientInterfaceGui().put(ctrld.getMatrix());
+                            } else {
+                                dst.setIsDama(true);
                                 dst.setIsPiece(true);
                                 dst.setColorPiece(org.getColorPiece());
+                                org.setIsDama(false);
+                                org.setIsPiece(false);
                                 
                                 ctrld.updateMatrix();
                                 instance.getClientInterfaceGui().put(ctrld.getMatrix());
                             }
                         }
                     }
-
                 }
-                
                 org.setClicked(false);
                 dst.setClicked(false);
-                
-
                 
                 repaint();
                 
@@ -175,8 +216,36 @@ public class Board extends JPanel implements Runnable {
         
     }
     
+    public boolean checkDama(Square s) {
+        return s.getNeighbor()[2] == null && s.getNeighbor()[3] == null;
+    }
+    
+    public Square checkNeighborDama(Square x, Square y) {
+        for (int i = 0; i < x.getNeighbor().length; i++) {
+            Square crt = x.getNeighbor()[i];
+            if (crt != null) {
+                do {
+                    if (crt.isIsPiece()) {
+                        if (crt.getNeighbor()[i] == y) {
+                            return crt;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (crt == y) {
+                        return y;
+                    } else {
+                        crt = crt.getNeighbor()[i];
+                    }
+                    
+                } while (crt != null);
+            }
+        }
+        return null;
+    }
+    
     public Square checkNeighbor(Square x, Square y) {
-        for (int  i = 2; i < x.getNeighbor().length;i++ ) {
+        for (int i = 2; i < x.getNeighbor().length; i++) {
             Square crt = x.getNeighbor()[i];
             if (crt == y) {
                 return y;
@@ -209,4 +278,12 @@ public class Board extends JPanel implements Runnable {
         updateBoardMouse();
     }
     
+    public boolean checkePlayer(Square s) {
+        ControlDama ctrld = ControlDama.getInstace();
+        
+        if (ctrld.getPlayer() == 1 && s.getColorPiece() == Color.WHITE) {
+            return true;
+        }
+        return ctrld.getPlayer() == 2 && s.getColorPiece() == Color.BLACK;
+    }
 }

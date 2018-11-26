@@ -10,7 +10,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  *
- * @author jean
+ * @author Jean Yamada
  */
 public class Synchronize {
     private static Synchronize synchronize;

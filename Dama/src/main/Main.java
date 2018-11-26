@@ -10,7 +10,7 @@ import gui.Principal;
 
 /**
  *
- * @author visitante
+ * @author Jean Yamada
  */
 public class Main {
 

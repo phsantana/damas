@@ -21,14 +21,13 @@ import synchronize.Synchronize;
 
 /**
  *
- * @author visitante
+ * @author Jean Yamada
  */
 public class Square extends JPanel implements MouseListener {
 
     private Color colorSquare, colorPiece;
     private boolean isPiece, isDama;
     private boolean clicked;
-    private static Square squareClicked;
     private Square[] neighbor;
 
     public Square() {
@@ -89,8 +88,12 @@ public class Square extends JPanel implements MouseListener {
         g2d.setColor(colorPiece);
         g2d.fillOval(5, 5, d.width - 10, d.height - 10);
 
+        if(isDama){
+            g2d.setColor(Color.YELLOW);
+            g2d.fillOval(15, 15, d.width - 30, d.height - 30);
+        }
         if (clicked) {
-            g2d.setColor(Color.RED);
+            g2d.setColor(Color.ORANGE);
             g2d.drawOval(5, 5, d.width - 10, d.height - 10);
 
         }
@@ -136,10 +139,12 @@ public class Square extends JPanel implements MouseListener {
             ControlDama ctrd = ControlDama.getInstace();
 
             if (ctrd.isTurn()) {
-                Synchronize instance = Synchronize.getInstance();
 
-                setClicked(true);
-                instance.getMouseEvent().put(this);
+                    Synchronize instance = Synchronize.getInstance();
+
+                    setClicked(true);
+                    instance.getMouseEvent().put(this);
+                
             }
             repaint();
 

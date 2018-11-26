@@ -8,16 +8,13 @@ package connection;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  *
- * @author jean
+ * @author Jean Yamada
  */
 public class Connection implements Runnable {
 
@@ -34,36 +31,38 @@ public class Connection implements Runnable {
         DataInputStream input = null;
         DataOutputStream out = null;
         int turn = 0;
-
-        Random random = new Random(System.currentTimeMillis());
-
-        Integer player1 = random.nextInt(2) + 1;
-
-        Integer player2;
-
-        if (player1 == 1) {
-            player2 = 2;
-            turn = 1;
-
-        } else {
-            player2 = 1;
-            turn = 2;
-
-        }
+        int[][] board;
 
         try {
             out = new DataOutputStream(socket1.getOutputStream());
-            out.write(player1);
+            out.writeInt(1);
+            board = createMatrix(1);
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    out.writeInt(board[i][j]);
+                }
+            }
 
             out = new DataOutputStream(socket2.getOutputStream());
-            out.write(player2);
+            out.writeInt(2);
 
+            board = rotacionarMatrizHorario(board);
+            board = rotacionarMatrizHorario(board);
+
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    out.writeInt(board[i][j]);
+                }
+            }
 
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        int[][] board = new int[8][8];
+        board = new int[8][8];
+        turn = 1;
+        int loose = 0;
+
         do {
             try {
 
@@ -79,7 +78,7 @@ public class Connection implements Runnable {
 
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
-                        board[i][j] = input.read();
+                        board[i][j] = input.readInt();
                     }
                 }
 
@@ -91,12 +90,13 @@ public class Connection implements Runnable {
                         out.writeInt(board[i][j]);
                     }
                 }
-                out.close();
+
             } catch (IOException e) {
             }
 
-        } while (checkEndGame(board) == -1);
+        } while ((loose = checkEndGame(board)) == -1);
 
+        System.out.println("acabaou " + loose);
     }
 
     public int[][] rotacionarMatrizHorario(int[][] matriz) {
@@ -116,21 +116,34 @@ public class Connection implements Runnable {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
 
-                if (board[i][j] == 1) {
+                if (board[i][j] == 1 || board[i][j] == 3) {
                     contWhite++;
-                } else if (board[i][j] == 2) {
+                } else if (board[i][j] == 2 || board[i][j] == 4) {
                     contBlack++;
                 }
 
             }
         }
         if (contBlack == 0) {
-            return 1;
+            return 11;
         }
         if (contWhite == 0) {
-            return 2;
+            return 22;
         }
         return -1;
     }
 
+    public int[][] createMatrix(int player) {
+        int[][] matrix;
+        if (player == 1) {
+            matrix = new int[][]{{1, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 1, 0, 1, 0, 1}, {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, -1, 0, -1, 0, -1, 0, -1}, {-1, 0, -1, 0, -1, 0, -1, 0},
+            {0, 2, 0, 2, 0, 2, 0, 2, 0, 2}, {2, 0, 2, 0, 2, 0, 2, 0, 2, 0}, {0, 2, 0, 2, 0, 2, 0, 2, 0, 2}};
+        } else {
+            matrix = new int[][]{{0, 2, 0, 2, 0, 2, 0, 2, 0, 2}, {2, 0, 2, 0, 2, 0, 2, 0, 2, 0}, {0, 2, 0, 2, 0, 2, 0, 2, 0, 2},
+            {-1, 0, -1, 0, -1, 0, -1, 0}, {0, -1, 0, -1, 0, -1, 0, -1},
+            {1, 0, 1, 0, 1, 0, 1, 0}, {0, 1, 0, 1, 0, 1, 0, 1}, {1, 0, 1, 0, 1, 0, 1, 0}};
+        }
+        return matrix;
+    }
 }
